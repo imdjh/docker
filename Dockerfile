@@ -1,6 +1,7 @@
 FROM openjdk:8-jdk
+MAINTAINER Jiahao Dai (jiahao.dai@hypers.com)
 
-RUN apt-get update && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
+RUN DEBIAN_FRONTEND=noninteractive apt-get update && apt-get install -y git curl && rm -rf /var/lib/apt/lists/*
 
 ENV JENKINS_HOME /var/jenkins_home
 ENV JENKINS_SLAVE_AGENT_PORT 50000
@@ -69,3 +70,33 @@ ENTRYPOINT ["/bin/tini", "--", "/usr/local/bin/jenkins.sh"]
 # from a derived Dockerfile, can use `RUN plugins.sh active.txt` to setup /usr/share/jenkins/ref/plugins from a support bundle
 COPY plugins.sh /usr/local/bin/plugins.sh
 COPY install-plugins.sh /usr/local/bin/install-plugins.sh
+
+###########
+#  MAVEN  #
+###########
+ARG MAVEN_VERSION=3.3.9
+ARG USER_HOME_DIR="/root"
+ARG MAVEN_URL=http://apache.osuosl.org/maven/maven-3/${MAVEN_VERSION}/binaries/apache-maven-${MAVEN_VERSION}-bin.tar.gz
+ARG MAVEN_SHA=5b4c117854921b527ab6190615f9435da730ba05
+
+# download and verify
+RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
+  && curl -fsSL ${MAVEN_URL} -o /tmp/maven-${MAVEN_VERSION}-bin.tar.gz \
+  && echo "${MAVEN_SHA}  /tmp/maven-${MAVEN_VERSION}-bin.tar.gz" | sha1sum -c - \
+  && tar -xzC /usr/share/maven --strip-components=1 /tmp/maven-${MAVEN_VERSION}-bin.tar.gz \
+  && ln -s /usr/share/maven/bin/mvn /usr/bin/mvn
+
+ENV MAVEN_HOME /usr/share/maven
+ENV MAVEN_CONFIG "$USER_HOME_DIR/.m2"
+
+COPY mvn-entrypoint.sh /usr/local/bin/mvn-entrypoint.sh
+COPY settings-docker.xml /usr/share/maven/ref/
+
+VOLUME "$USER_HOME_DIR/.m2"
+
+############
+#  NODEJS  #
+############
+
+
+
