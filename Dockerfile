@@ -84,7 +84,7 @@ ARG MAVEN_SHA=5b4c117854921b527ab6190615f9435da730ba05
 RUN mkdir -p /usr/share/maven /usr/share/maven/ref \
   && curl -fsSL ${MAVEN_URL} -o /tmp/maven-${MAVEN_VERSION}-bin.tar.gz \
   && sha1sum /tmp/maven-${MAVEN_VERSION}-bin.tar.gz  | grep -q "${MAVEN_SHA}" \
-  && tar -xzC /usr/share/maven --strip-components=1 /tmp/maven-${MAVEN_VERSION}-bin.tar.gz \
+  && tar -xzC /usr/share/maven --strip-components=1 -f /tmp/maven-${MAVEN_VERSION}-bin.tar.gz \
   && ln -s /usr/share/maven/bin/mvn /usr/bin/mvn
 
 ENV MAVEN_HOME /usr/share/maven
